@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Squax — AI Bug Bounty Platform</title>
+  <meta name="description"
+    content="Squax is a premium AI vulnerability hunting platform. Browse bounties, probe AI models in a sandboxed environment, and submit professional reports." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+</head>
+
+<body>
+
+  <!-- Animated Background -->
+  <div class="bg-gradient"></div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- App Shell -->
+  <div id="app">
+
+    <!-- ─── Sidebar ──────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark">
+          <div class="logo-icon">🛡️</div>
+          <div>
+            <div class="logo-text">SQUAX</div>
+            <div class="logo-tagline">AI Bug Bounty Platform</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Navigation</div>
+
+        <a class="nav-item" data-route="dashboard" href="#dashboard">
+          <span>Dashboard</span>
+        </a>
+
+        <a class="nav-item" data-route="bounties" href="#bounties">
+          <span>Bounties</span>
+          <span class="nav-badge">6</span>
+        </a>
+
+        <a class="nav-item" data-route="sandbox" href="#sandbox">
+          <span>Sandbox</span>
+        </a>
+
+        <a class="nav-item" data-route="reports" href="#reports">
+          <span>Reports</span>
+        </a>
+
+        <div class="nav-section-label" style="margin-top:16px;">Automation</div>
+
+        <a class="nav-item" data-route="june" href="#june">
+          <span>June AI</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="june-status" onclick="Router.navigateTo('#june')">
+          <div class="june-dot offline" id="sidebar-june-dot"></div>
+          <div class="june-info">
+            <div class="june-name">June AI</div>
+            <div class="june-state" id="sidebar-june-state">Offline</div>
+          </div>
+          <span style="font-size:12px; color:var(--text-muted);">→</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ─── Main Content ──────────────────────────── -->
+    <main class="main-content">
+      <div id="page-content">
+        <!-- Pages rendered here by router -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ─── Scripts (order matters) ──────────────────── -->
+  <script src="js/router.js"></script>
+  <script src="js/store.js"></script>
+
+  <!-- Pages -->
+  <script src="js/pages/dashboard.js"></script>
+  <script src="js/pages/bounties.js"></script>
+  <script src="js/pages/sandbox.js"></script>
+  <script src="js/pages/reports.js"></script>
+  <script src="js/pages/june.js"></script>
+
+  <!-- ─── Boot ──────────────────────────────────── -->
+  <script>
+    // Keep sidebar June dot in sync with store
+    Store.subscribe(function (state) {
+      const dot = document.getElementById('sidebar-june-dot');
+      const label = document.getElementById('sidebar-june-state');
+      if (!dot || !label) return;
+      if (state.juneCfg.online) {
+        dot.className = 'june-dot online';
+        label.textContent = 'Online';
+      } else {
+        dot.className = 'june-dot offline';
+        label.textContent = 'Offline';
+      }
+
+      // Update bounty badge in sidebar
+      const badge = document.querySelector('.nav-item[data-route="sandbox"] .nav-badge');
+      if (state.activeBounty && !badge) {
+        const item = document.querySelector('.nav-item[data-route="sandbox"]');
+        if (item) {
+          const b = document.createElement('span');
+          b.className = 'nav-badge'; b.textContent = '●';
+          item.appendChild(b);
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>
