@@ -2,6 +2,116 @@
    SQUAX — June AI Integration Panel
 ═══════════════════════════════════════════════════ */
 
+// ─── Model Pricing (per 1M tokens, USD) ──────────
+//   Source: official provider pricing pages, Feb 2026
+//   Estimates use avg probe length ~120 tokens in + 256 tokens out
+const MODEL_PRICING = {
+  // OpenAI
+  'gpt-4o': { input: 2.50, output: 10.00 },
+  'gpt-4o-mini': { input: 0.15, output: 0.60 },
+  'gpt-3.5-turbo': { input: 0.50, output: 1.50 },
+  // Anthropic
+  'claude-3-5-sonnet-20241022': { input: 3.00, output: 15.00 },
+  'claude-3-haiku-20240307': { input: 0.25, output: 1.25 },
+  'claude-3-opus-20240229': { input: 15.00, output: 75.00 },
+  // Google
+  'gemini-2.0-flash': { input: 0.10, output: 0.40 },
+  'gemini-1.5-pro': { input: 1.25, output: 5.00 },
+  'gemini-1.5-flash': { input: 0.075, output: 0.30 },
+  // Mistral
+  'mistral-large': { input: 2.00, output: 6.00 },
+  'mistral-small': { input: 0.20, output: 0.60 },
+  // Local (Ollama) — free
+  'llama3': { input: 0, output: 0 },
+  'llama3:8b': { input: 0, output: 0 },
+  'mistral': { input: 0, output: 0 },
+};
+
+// Average token counts per probe (conservative estimates)
+const AVG_INPUT_TOKENS = 130;  // prompt text
+const AVG_OUTPUT_TOKENS = 280;  // AI response
+
+function computeCampaignCost(selectedCategories, model) {
+  const totalProbes = [...selectedCategories].reduce(
+    (acc, id) => acc + (JUNE_PROBES[id] || []).length, 0
+  );
+  if (totalProbes === 0) return { totalProbes: 0, estimatedCost: 0, isLocal: false, isUnknown: false };
+
+  const pricing = MODEL_PRICING[model];
+  if (!pricing) return { totalProbes, estimatedCost: null, isLocal: false, isUnknown: true };
+
+  const isLocal = pricing.input === 0 && pricing.output === 0;
+  if (isLocal) return { totalProbes, estimatedCost: 0, isLocal: true, isUnknown: false };
+
+  const inputCost = (totalProbes * AVG_INPUT_TOKENS / 1_000_000) * pricing.input;
+  const outputCost = (totalProbes * AVG_OUTPUT_TOKENS / 1_000_000) * pricing.output;
+  const total = inputCost + outputCost;
+
+  return { totalProbes, estimatedCost: total, isLocal: false, isUnknown: false };
+}
+
+function renderCostEstimate(selectedCategories, model) {
+  const { totalProbes, estimatedCost, isLocal, isUnknown } = computeCampaignCost(selectedCategories, model);
+
+  if (totalProbes === 0) {
+    return `<div class="cost-estimate" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text-muted);">
+      Select attack categories to see estimated cost
+    </div>`;
+  }
+
+  if (isLocal) {
+    return `<div class="cost-estimate" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Estimated Cost</div>
+      <div style="font-size:22px;font-weight:800;color:var(--success);">$0.00</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${totalProbes} probes · Local model — no API charges</div>
+    </div>`;
+  }
+
+  if (isUnknown) {
+    return `<div class="cost-estimate" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Estimated Cost</div>
+      <div style="font-size:14px;font-weight:700;color:var(--warning);">Unknown model</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${totalProbes} probes · Pricing data unavailable for "${escHtml(model)}"</div>
+    </div>`;
+  }
+
+  const costStr = estimatedCost < 0.001 ? '<$0.001' : `$${estimatedCost.toFixed(4)}`;
+  const isExpensive = estimatedCost > 1.00;
+  const color = isExpensive ? 'var(--danger)' : estimatedCost > 0.10 ? 'var(--warning)' : 'var(--success)';
+  const borderColor = isExpensive ? 'rgba(239,68,68,0.3)' : estimatedCost > 0.10 ? 'rgba(245,158,11,0.25)' : 'rgba(16,185,129,0.25)';
+  const bgColor = isExpensive ? 'rgba(239,68,68,0.06)' : estimatedCost > 0.10 ? 'rgba(245,158,11,0.06)' : 'rgba(16,185,129,0.06)';
+
+  const pricing = MODEL_PRICING[model];
+
+  return `
+    <div class="cost-estimate" style="background:${bgColor};border:1px solid ${borderColor};border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Estimated Cost</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+        <div style="font-size:26px;font-weight:800;color:${color};">${costStr}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${totalProbes} API calls</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:11px;">
+        <div style="background:rgba(0,0,0,0.2);padding:6px 8px;border-radius:4px;">
+          <div style="color:var(--text-muted);">Probes</div>
+          <div style="color:var(--text-primary);font-weight:700;">${totalProbes}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.2);padding:6px 8px;border-radius:4px;">
+          <div style="color:var(--text-muted);">Input $/1M</div>
+          <div style="color:var(--text-primary);font-weight:700;">$${pricing.input.toFixed(3)}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.2);padding:6px 8px;border-radius:4px;">
+          <div style="color:var(--text-muted);">Output $/1M</div>
+          <div style="color:var(--text-primary);font-weight:700;">$${pricing.output.toFixed(3)}</div>
+        </div>
+      </div>
+      ${isExpensive ? `
+        <div style="margin-top:10px;padding:8px 10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:4px;font-size:11px;color:#f87171;">
+          ⚠️ High cost warning — this campaign will cost over $1.00. Consider using a cheaper model like <strong>gpt-4o-mini</strong> or running fewer categories.
+        </div>` : ''}
+      <div style="margin-top:8px;font-size:10px;color:var(--text-muted);">Estimate based on ~${AVG_INPUT_TOKENS} input / ~${AVG_OUTPUT_TOKENS} output tokens/probe · Actual cost may vary</div>
+    </div>`;
+}
+
 const CAMPAIGN_TYPES = [
   { id: 'prompt-injection', label: 'Prompt Injection Suite', icon: '💉', probes: 6, desc: 'DAN, system override, indirect & nested injections' },
   { id: 'jailbreak', label: 'Jailbreak Sweep', icon: '🔓', probes: 8, desc: 'Persona switching, dev-mode, hypothetical framing' },
@@ -166,7 +276,10 @@ Router.registerPage('june', function (container) {
             </div>
           </div>
 
-          <!-- Run Campaign -->
+          <!-- Run Campaign + Live Cost Estimate -->
+          <div id="june-cost-estimate">
+            ${renderCostEstimate(selected, getState().model)}
+          </div>
           <button class="btn btn-primary btn-lg w-full" id="june-run-btn"
             onclick="juneRunCampaign()" ${running ? 'disabled' : ''}>
             ${running ? '<div class="spinner"></div> Campaign Running…' : '🚀 Run Campaign'}
@@ -260,15 +373,22 @@ Router.registerPage('june', function (container) {
   window.juneToggle = function (id) {
     if (selected.has(id)) selected.delete(id); else selected.add(id);
     document.getElementById(`camp-${id}`).checked = selected.has(id);
+    // Update cost estimate live without full re-render
+    const costEl = document.getElementById('june-cost-estimate');
+    if (costEl) costEl.innerHTML = renderCostEstimate(selected, getState().model);
   };
 
   window.juneSelectAll = function () {
     CAMPAIGN_TYPES.forEach(c => { selected.add(c.id); const cb = document.getElementById(`camp-${c.id}`); if (cb) cb.checked = true; });
+    const costEl = document.getElementById('june-cost-estimate');
+    if (costEl) costEl.innerHTML = renderCostEstimate(selected, getState().model);
   };
 
   window.juneClearAll = function () {
     selected.clear();
     CAMPAIGN_TYPES.forEach(c => { const cb = document.getElementById(`camp-${c.id}`); if (cb) cb.checked = false; });
+    const costEl = document.getElementById('june-cost-estimate');
+    if (costEl) costEl.innerHTML = renderCostEstimate(selected, getState().model);
   };
 
   window.juneRunCampaign = async function () {
