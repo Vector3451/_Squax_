@@ -36,6 +36,7 @@ const BOUNTIES = [
     type: 'professional',
     desc: 'Official Anthropic responsible disclosure program for reporting security vulnerabilities in Claude AI systems and infrastructure. Direct impact on frontier AI safety and constitutional AI research.',
     tags: ['constitutional-bypass', 'jailbreak', 'safety-bypass', 'infrastructure'],
+    outOfScope: ['Data Extraction'], // Unowned account compromise is strictly prohibited
     rewards: { critical: 'Varies', high: 'Varies', medium: 'Varies', low: 'Varies' },
     rewardNote: 'Rewards via responsible disclosure — submit directly to Anthropic',
     apiBase: 'https://api.anthropic.com/v1',
@@ -54,6 +55,7 @@ const BOUNTIES = [
     type: 'professional',
     desc: 'Google\'s Abuse Vulnerability Reward Program for Gemini AI models and services, part of the Google Bug Hunters program. Focuses specifically on AI safety vulnerabilities and abuse vectors in production Gemini systems.',
     tags: ['abuse-vectors', 'safety-bypass', 'model-inversion', 'multimodal-injection'],
+    outOfScope: ['Jailbreak', 'Role Confusion'], // Pure safety bypasses within your own session are OOS
     rewards: { critical: 'Varies', high: 'Varies', medium: 'Varies', low: 'Varies' },
     rewardNote: 'Rewards via Google Bug Hunters — amounts vary by severity & impact',
     apiBase: 'https://generativelanguage.googleapis.com/v1beta',
@@ -72,6 +74,7 @@ const BOUNTIES = [
     type: 'professional',
     desc: 'Mozilla\'s 0-Day Investigative Network bug bounty specifically targeting vulnerabilities in large language models and generative AI systems. Awards up to $15,000 for critical findings including guardrail jailbreaks and training data leakage.',
     tags: ['prompt-injection', 'guardrail-bypass', 'training-data-leak', 'jailbreak'],
+    outOfScope: [], // 0DIN accepts all purely AI-focused vulnerabilities
     rewards: { critical: '$15,000', high: '$5,000', medium: '$1,000', low: '$500' },
     rewardNote: '$500–$15,000 reward range · Mozilla partnership · GenAI security focus',
     apiBase: '',
@@ -93,6 +96,7 @@ const BOUNTIES = [
     type: 'competition',
     desc: 'World\'s largest AI red-teaming competition with a $100,000+ prize pool, co-organised with OpenAI. Multiple tracks: CBRNE, Agents, and Classic GenAI. Tests jailbreaking and prompt injection with educational tutorials included.',
     tags: ['jailbreak', 'prompt-injection', 'agent-attacks', 'CBRNE'],
+    outOfScope: [], // Prompt hacking is the entire scope of this competition
     rewards: { critical: '$100,000+', high: 'Prize Pool', medium: 'Prize Pool', low: 'N/A' },
     rewardNote: '$100,000+ prize pool · 2-month duration · 3 competition tracks',
     apiBase: '',
@@ -111,6 +115,7 @@ const BOUNTIES = [
     type: 'competition',
     desc: 'Competitive AI safety and alignment arena featuring prompt injection challenges, model evaluation, and red-teaming competitions. Test skills against various AI models with an Elo scoring system in structured competitive scenarios.',
     tags: ['prompt-injection', 'model-evaluation', 'safety-testing', 'red-teaming'],
+    outOfScope: ['Data Extraction'],
     rewards: { critical: 'Elo + Prizes', high: 'Elo Points', medium: 'Elo Points', low: 'N/A' },
     rewardNote: 'Elo scoring system · Structured competitive format · Community-driven',
     apiBase: '',
@@ -129,6 +134,7 @@ const BOUNTIES = [
     type: 'competition',
     desc: 'Open-source community-driven LLM red-teaming platform. Players have 60 seconds to convince models to say target words using jailbreaking techniques. Gamified with Elo scoring — no registration required.',
     tags: ['jailbreak', 'red-teaming', '60s-challenge', 'elo-scoring'],
+    outOfScope: ['Data Extraction', 'Token Smuggling'], // Strictly conversational jailbreaks only
     rewards: { critical: 'Elo Points', high: 'Elo Points', medium: 'Elo Points', low: 'N/A' },
     rewardNote: 'No registration · 60-second jailbreak challenges · Open-source codebase',
     apiBase: '',
@@ -147,6 +153,7 @@ const BOUNTIES = [
     type: 'competition',
     desc: 'Interactive AI escape room where participants use prompt injection techniques to outsmart AI chatbot supervisors and reveal secret passcodes. Features a $10K competition with a global leaderboard and multi-level difficulty progression.',
     tags: ['prompt-injection', 'escape-room', 'chatbot-bypass', 'multi-level'],
+    outOfScope: ['Data Extraction', 'Model Inversion'], // Focused purely on prompt injection bypass
     rewards: { critical: '$10,000', high: 'Leaderboard', medium: 'Leaderboard', low: 'N/A' },
     rewardNote: '$10K prize pool · Global leaderboard · Virtual escape room scenarios',
     apiBase: '',
@@ -165,6 +172,7 @@ const BOUNTIES = [
     type: 'competition',
     desc: 'Interactive LLM hacking challenge with progressively difficult levels designed to push the limits of AI security and model manipulation. Real-time feedback system, community leaderboard, and no setup required — runs entirely in browser.',
     tags: ['jailbreak', 'prompt-engineering', 'progressive-difficulty', 'leaderboard'],
+    outOfScope: [], // All generative hacking allowed for the challenge
     rewards: { critical: 'Leaderboard', high: 'Leaderboard', medium: 'Leaderboard', low: 'N/A' },
     rewardNote: 'Community leaderboard · Real-time feedback · Browser-based',
     apiBase: '',
