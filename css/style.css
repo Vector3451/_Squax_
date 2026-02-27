@@ -888,6 +888,10 @@ body {
   scrollbar-color: rgba(124, 58, 237, 0.3) transparent;
 }
 
+.sandbox-sidebar>* {
+  flex-shrink: 0;
+}
+
 .sandbox-sidebar::-webkit-scrollbar,
 .attack-grid::-webkit-scrollbar,
 #sb-evidence-list::-webkit-scrollbar,
