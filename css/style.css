@@ -888,6 +888,19 @@ body {
   width: 4px;
 }
 
+.sandbox-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sandbox-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.3);
+  border-radius: 99px;
+}
+
+.sandbox-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.6);
+}
+
 .sandbox-header {
   grid-column: 2;
 }
