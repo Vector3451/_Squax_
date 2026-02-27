@@ -216,7 +216,7 @@ Router.registerPage('sandbox', function (container) {
         Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true });
         showToast(`Connected to ${base}`, 'success');
       } else if (res.status === 401) {
-        Store.setState({ connected: false });
+        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: false });
         showToast('Invalid API key', 'error');
       } else {
         // Accept anyway — some endpoints don't have /models
@@ -228,6 +228,12 @@ Router.registerPage('sandbox', function (container) {
       Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true });
       showToast('Credentials saved. Connection will be verified on first message.', 'info');
     }
+
+    // Force local variables to sync before render
+    apiKey = key;
+    apiBase = base;
+    selectedModel = model;
+
     renderFull();
   };
 
