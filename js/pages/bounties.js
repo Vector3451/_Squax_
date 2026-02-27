@@ -17,7 +17,9 @@ const BOUNTIES = [
     type: 'professional',
     desc: 'Official OpenAI bug bounty hosted on Bugcrowd. Scope covers ChatGPT, the GPT API, and related OpenAI services and infrastructure. One of the most high-profile AI security research targets in the industry.',
     tags: ['prompt-injection', 'jailbreak', 'api-security', 'infrastructure'],
+    inScope: ['Auth Bypass', 'Cross-Tenant Data Leaks', 'Model Inversion (w/ Impact)', 'RCE in Plugins/Env'],
     outOfScope: ['Prompt Injection', 'Role Confusion'], // Pure safety bypasses without security impact are OOS
+    worthyBug: 'A bug that allows you to read another ChatGPT user\'s conversation history, bypass billing/auth, or execute arbitrary code on OpenAI\'s sandboxed environments (like escaping the Code Interpreter container).',
     rewards: { critical: 'Varies', high: 'Varies', medium: 'Varies', low: 'Varies' },
     rewardNote: 'Rewards determined per-submission on Bugcrowd',
     apiBase: 'https://api.openai.com/v1',
@@ -36,7 +38,9 @@ const BOUNTIES = [
     type: 'professional',
     desc: 'Official Anthropic responsible disclosure program for reporting security vulnerabilities in Claude AI systems and infrastructure. Direct impact on frontier AI safety and constitutional AI research.',
     tags: ['constitutional-bypass', 'jailbreak', 'safety-bypass', 'infrastructure'],
+    inScope: ['Universal Jailbreaks', 'Cross-Account Leaks', 'System Prompt Exfiltration', 'CBRN Bypasses'],
     outOfScope: ['Data Extraction'], // Unowned account compromise is strictly prohibited
+    worthyBug: 'A highly reliable "universal jailbreak" that forces Claude to generate restricted material (especially biological/cybersecurity hazards), or a vulnerability that leaks Anthropic\'s hidden system prompts/training data.',
     rewards: { critical: 'Varies', high: 'Varies', medium: 'Varies', low: 'Varies' },
     rewardNote: 'Rewards via responsible disclosure — submit directly to Anthropic',
     apiBase: 'https://api.anthropic.com/v1',
@@ -55,7 +59,9 @@ const BOUNTIES = [
     type: 'professional',
     desc: 'Google\'s Abuse Vulnerability Reward Program for Gemini AI models and services, part of the Google Bug Hunters program. Focuses specifically on AI safety vulnerabilities and abuse vectors in production Gemini systems.',
     tags: ['abuse-vectors', 'safety-bypass', 'model-inversion', 'multimodal-injection'],
+    inScope: ['Indirect Prompt Injection', 'Data Exfiltration via AI', 'Phishing Enablement', 'Workspace/Drive Compromise'],
     outOfScope: ['Jailbreak', 'Role Confusion'], // Pure safety bypasses within your own session are OOS
+    worthyBug: 'An INDIRECT prompt injection (e.g. hiding a payload on a webpage that Gemini reads) that forces Gemini to secretly leak the user\'s private data or perform unauthorized actions in their Google Workspace.',
     rewards: { critical: 'Varies', high: 'Varies', medium: 'Varies', low: 'Varies' },
     rewardNote: 'Rewards via Google Bug Hunters — amounts vary by severity & impact',
     apiBase: 'https://generativelanguage.googleapis.com/v1beta',
@@ -74,7 +80,9 @@ const BOUNTIES = [
     type: 'professional',
     desc: 'Mozilla\'s 0-Day Investigative Network bug bounty specifically targeting vulnerabilities in large language models and generative AI systems. Awards up to $15,000 for critical findings including guardrail jailbreaks and training data leakage.',
     tags: ['prompt-injection', 'guardrail-bypass', 'training-data-leak', 'jailbreak'],
+    inScope: ['Training Data Poisoning', 'Model DoS', 'Guardrail Bypasses', 'Prompt Injection'],
     outOfScope: [], // 0DIN accepts all purely AI-focused vulnerabilities
+    worthyBug: 'A novel attack vector that reliably bypasses safety guardrails, poisons model outputs at scale, or demonstrably leaks pieces of the model\'s underlying training data.',
     rewards: { critical: '$15,000', high: '$5,000', medium: '$1,000', low: '$500' },
     rewardNote: '$500–$15,000 reward range · Mozilla partnership · GenAI security focus',
     apiBase: '',

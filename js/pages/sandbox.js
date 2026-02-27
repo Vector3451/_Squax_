@@ -103,6 +103,25 @@ Router.registerPage('sandbox', function (container) {
             </button>
           </div>
 
+          <!-- Scope & Rules Focus -->
+          ${activeBounty && (activeBounty.inScope?.length > 0 || activeBounty.worthyBug) ? `
+          <div class="card" style="border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.03);">
+            <div class="section-title flex justify-between items-center" style="color:var(--success);">
+              <span>🎯 In-Scope Hunt Rules</span>
+            </div>
+            ${activeBounty.inScope && activeBounty.inScope.length > 0 ? `
+              <div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px;">
+                ${activeBounty.inScope.map(tag => `<span class="badge" style="background:rgba(16,185,129,0.1);color:var(--success);border:1px solid rgba(16,185,129,0.3);"><span style="font-size:10px;margin-right:4px;">✅</span>${tag}</span>`).join('')}
+              </div>
+            ` : ''}
+            ${activeBounty.worthyBug ? `
+              <div style="font-size:11px;color:var(--text-secondary);background:rgba(0,0,0,0.2);padding:10px;border-radius:6px;border-left:2px solid var(--success);">
+                <strong style="color:var(--text-primary);">Worthy Bug:</strong> ${escHtml(activeBounty.worthyBug)}
+              </div>
+            ` : ''}
+          </div>
+          ` : ''}
+
           <!-- Attack Toolbox -->
           <div class="card">
             <div class="section-title">⚔️ Attack Toolbox</div>
