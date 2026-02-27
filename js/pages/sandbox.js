@@ -105,7 +105,7 @@ Router.registerPage('sandbox', function (container) {
 
           <!-- Scope & Rules Focus -->
           ${activeBounty && (activeBounty.inScope?.length > 0 || activeBounty.worthyBug) ? `
-          <div class="card" style="border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.03);">
+          <div class="card scrollable-card" style="border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.03); max-height: 220px; overflow-y: auto;">
             <div class="section-title flex justify-between items-center" style="color:var(--success);">
               <span>🎯 In-Scope Hunt Rules</span>
             </div>

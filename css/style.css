@@ -888,20 +888,32 @@ body {
   scrollbar-color: rgba(124, 58, 237, 0.3) transparent;
 }
 
-.sandbox-sidebar::-webkit-scrollbar {
+.sandbox-sidebar::-webkit-scrollbar,
+.attack-grid::-webkit-scrollbar,
+#sb-evidence-list::-webkit-scrollbar,
+.scrollable-card::-webkit-scrollbar {
   width: 4px;
 }
 
-.sandbox-sidebar::-webkit-scrollbar-track {
+.sandbox-sidebar::-webkit-scrollbar-track,
+.attack-grid::-webkit-scrollbar-track,
+#sb-evidence-list::-webkit-scrollbar-track,
+.scrollable-card::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.sandbox-sidebar::-webkit-scrollbar-thumb {
+.sandbox-sidebar::-webkit-scrollbar-thumb,
+.attack-grid::-webkit-scrollbar-thumb,
+#sb-evidence-list::-webkit-scrollbar-thumb,
+.scrollable-card::-webkit-scrollbar-thumb {
   background: rgba(124, 58, 237, 0.3);
   border-radius: 99px;
 }
 
-.sandbox-sidebar::-webkit-scrollbar-thumb:hover {
+.sandbox-sidebar::-webkit-scrollbar-thumb:hover,
+.attack-grid::-webkit-scrollbar-thumb:hover,
+#sb-evidence-list::-webkit-scrollbar-thumb:hover,
+.scrollable-card::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 58, 237, 0.6);
 }
 
@@ -1057,6 +1069,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 58, 237, 0.3) transparent;
 }
 
 .attack-btn {
@@ -1095,6 +1112,14 @@ body {
 }
 
 /* ─── Evidence Log ───────────────────────────────── */
+#sb-evidence-list {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 58, 237, 0.3) transparent;
+}
+
 .evidence-item {
   padding: 10px 12px;
   border-radius: var(--radius-sm);
