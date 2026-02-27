@@ -197,6 +197,18 @@ Router.registerPage('sandbox', function (container) {
     if (cw) cw.scrollTop = cw.scrollHeight;
   }
 
+  // Helper to fallback to a CORS proxy if direct fetch fails (browser restriction)
+  async function fetchWithCorsBypass(url, options) {
+    try {
+      const res = await fetch(url, options);
+      return res;
+    } catch (e) {
+      console.warn('Direct fetch failed (likely CORS). Retrying with proxy...', e);
+      // Use corsproxy.io as a fallback for strict APIs like OpenAI/Anthropic
+      return await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, options);
+    }
+  }
+
   // ─── Connect ──────────────────────────────────────
   window.sandboxConnect = async function () {
     const key = document.getElementById('sb-apikey')?.value.trim() || '';
@@ -210,7 +222,7 @@ Router.registerPage('sandbox', function (container) {
 
     try {
       // Fetch models
-      const res = await fetch(`${base}/models`, {
+      const res = await fetchWithCorsBypass(`${base}/models`, {
         headers: { 'Authorization': `Bearer ${key}` }
       });
 
@@ -290,7 +302,7 @@ Router.registerPage('sandbox', function (container) {
         { role: 'user', content: text },
       ];
 
-      const res = await fetch(`${s.apiBase}/chat/completions`, {
+      const res = await fetchWithCorsBypass(`${s.apiBase}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -303,9 +315,18 @@ Router.registerPage('sandbox', function (container) {
       let aiText = '';
       if (res.ok) {
         const data = await res.json();
-        aiText = data?.choices?.[0]?.message?.content
-          || data?.content?.[0]?.text  // Anthropic format
-          || JSON.stringify(data);
+
+        // Handle various response formats (OpenAI, Anthropic, Gemini)
+        if (data?.choices?.[0]?.message?.content) {
+          aiText = data.choices[0].message.content;
+        } else if (data?.content?.[0]?.text) {
+          aiText = data.content[0].text;
+        } else if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+          aiText = data.candidates[0].content.parts[0].text; // Gemini compat
+        } else {
+          aiText = JSON.stringify(data);
+        }
+
       } else {
         const err = await res.json().catch(() => ({}));
         aiText = `⚠️ Error ${res.status}: ${err?.error?.message || res.statusText}`;
@@ -313,7 +334,7 @@ Router.registerPage('sandbox', function (container) {
 
       addChatMessage('assistant', aiText);
     } catch (e) {
-      addChatMessage('assistant', `⚠️ Network error: ${e.message}\n\nMake sure the API endpoint allows browser requests (CORS). For testing without a live key, responses will be simulated.`);
+      addChatMessage('assistant', `⚠️ Network error: ${e.message}\n\nFailed to reach the API even with a CORS proxy. Check your internet or try a different Base URL.`);
     }
 
     if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = 'Send ↑'; }
