@@ -66,8 +66,8 @@ Router.registerPage('sandbox', function (container) {
             <p>${activeBounty ? `Testing: <strong style="color:var(--accent-light);">${escHtml(activeBounty.company)} — ${escHtml(activeBounty.program)}</strong>` : 'No bounty selected. <a href="#bounties" style="color:var(--accent-light);">Choose one →</a>'}</p>
           </div>
           <div class="flex gap-2">
-            <button class="btn btn-secondary btn-sm" onclick="Router.navigateTo('#bounties')">← Change Bounty</button>
-            <button class="btn btn-primary btn-sm" onclick="Router.navigateTo('#reports')">📝 Build Report</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="Router.navigateTo('#bounties')">← Change Bounty</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="Router.navigateTo('#reports')">📝 Build Report</button>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@ Router.registerPage('sandbox', function (container) {
             <div id="sb-connect-status" class="connect-status ${connected ? 'connected' : 'disconnected'}" style="margin-bottom:14px;">
               ${connected ? '✅ Connected' : '⛔ Not connected'}
             </div>
-            <button class="btn btn-primary w-full" onclick="sandboxConnect()">
+            <button type="button" class="btn btn-primary w-full" onclick="sandboxConnect()">
               ${connected ? '🔄 Reconnect' : '🔌 Connect'}
             </button>
           </div>
@@ -154,7 +154,7 @@ Router.registerPage('sandbox', function (container) {
               ${evidence.length === 0 ? `<div class="empty-state" style="padding:20px;"><div class="empty-icon" style="font-size:28px;">📌</div><div>Flag AI responses to add evidence</div></div>` : ''}
               ${evidence.map(e => renderEvidenceItem(e)).join('')}
             </div>
-            ${evidence.length > 0 ? `<button class="btn btn-primary w-full mt-3" onclick="Router.navigateTo('#reports')" style="margin-top:12px;">📝 Build Report from Evidence</button>` : ''}
+            ${evidence.length > 0 ? `<button type="button" class="btn btn-primary w-full mt-3" onclick="Router.navigateTo('#reports')" style="margin-top:12px;">📝 Build Report from Evidence</button>` : ''}
           </div>
         </div>
 
@@ -166,7 +166,7 @@ Router.registerPage('sandbox', function (container) {
               <span style="font-size:14px; font-weight:600;">Chat</span>
               <span class="badge badge-info mono" style="font-size:10px;">${escHtml(selectedModel)}</span>
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="sandboxClearChat()">🗑 Clear</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="sandboxClearChat()">🗑 Clear</button>
           </div>
 
           <div class="chat-window" id="sb-chat-window">
@@ -181,7 +181,7 @@ Router.registerPage('sandbox', function (container) {
           <div class="chat-input-area" style="flex-shrink:0; margin-top:14px;">
             <textarea class="chat-input" id="sb-input" placeholder="Type a probe or choose an attack preset…" rows="1"
               onkeydown="sbHandleKey(event)"></textarea>
-            <button class="btn btn-primary" id="sb-send-btn" onclick="sandboxSend()" style="align-self:flex-end;">
+            <button type="button" class="btn btn-primary" id="sb-send-btn" onclick="sandboxSend()" style="align-self:flex-end;">
               Send ↑
             </button>
           </div>
