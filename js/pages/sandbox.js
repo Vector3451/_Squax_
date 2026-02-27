@@ -46,13 +46,14 @@ const ATTACK_PRESETS = [
 ];
 
 Router.registerPage('sandbox', function (container) {
-  let { activeBounty, apiKey, apiBase, selectedModel, connected, chatHistory, evidence, connected: isConnected } = Store.getState();
+  let { activeBounty, apiKey, apiBase, selectedModel, connected, chatHistory, evidence, connected: isConnected, availableModels } = Store.getState();
 
   function syncState() {
     const s = Store.getState();
     activeBounty = s.activeBounty; apiKey = s.apiKey; apiBase = s.apiBase;
     selectedModel = s.selectedModel; connected = s.connected;
     chatHistory = s.chatHistory; evidence = s.evidence;
+    availableModels = s.availableModels;
   }
 
   function renderFull() {
@@ -90,7 +91,7 @@ Router.registerPage('sandbox', function (container) {
             <div class="form-group">
               <label class="form-label">Model</label>
               <select class="form-select" id="sb-model">
-                ${(activeBounty ? activeBounty.models : ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo']).map(m =>
+                ${(availableModels || (activeBounty ? activeBounty.models : ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'])).map(m =>
       `<option value="${m}" ${selectedModel === m ? 'selected' : ''}>${m}</option>`
     ).join('')}
               </select>
@@ -208,24 +209,46 @@ Router.registerPage('sandbox', function (container) {
     if (statusEl) { statusEl.className = 'connect-status connecting'; statusEl.textContent = '⏳ Connecting…'; }
 
     try {
-      // Light validation ping
+      // Fetch models
       const res = await fetch(`${base}/models`, {
         headers: { 'Authorization': `Bearer ${key}` }
       });
+
+      let fetchedModels = null;
+      if (res.ok) {
+        try {
+          const data = await res.json();
+          // Universal compat format: { data: [{id: "model-1"}, ...] }
+          if (data && data.data && Array.isArray(data.data)) {
+            // Filter out embeddings and TTS to keep the list clean for sandbox chat
+            fetchedModels = data.data.map(m => m.id).filter(id => id && !id.includes('embed') && !id.includes('tts') && !id.includes('dall-e') && !id.includes('whisper'));
+          } else if (Array.isArray(data)) {
+            fetchedModels = data.map(m => m.id || m.name || m).filter(id => typeof id === 'string' && !id.includes('embed'));
+          }
+
+          if (fetchedModels && fetchedModels.length > 0) {
+            fetchedModels.sort();
+            if (!fetchedModels.includes(model)) {
+              model = fetchedModels[0]; // auto-select first available valid model
+            }
+          }
+        } catch (e) { console.error("Could not parse models", e); }
+      }
+
       if (res.ok || res.status === 404) { // 404 = model list not available, but key works
-        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true });
-        showToast(`Connected to ${base}`, 'success');
+        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true, availableModels: fetchedModels || availableModels });
+        showToast(`Connected to ${base}${fetchedModels ? ' (Models Auto-Detected)' : ''}`, 'success');
       } else if (res.status === 401) {
-        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: false });
+        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: false, availableModels: fetchedModels || availableModels });
         showToast('Invalid API key', 'error');
       } else {
         // Accept anyway — some endpoints don't have /models
-        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true });
+        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true, availableModels: fetchedModels || availableModels });
         showToast(`Connected (status ${res.status})`, 'info');
       }
     } catch (e) {
       // Network error / CORS — still save creds, send when messaging
-      Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true });
+      Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true, availableModels: null }); // Clear availableModels on network error
       showToast('Credentials saved. Connection will be verified on first message.', 'info');
     }
 
@@ -233,6 +256,7 @@ Router.registerPage('sandbox', function (container) {
     apiKey = key;
     apiBase = base;
     selectedModel = model;
+    availableModels = Store.getState().availableModels;
 
     renderFull();
   };
