@@ -17,6 +17,7 @@ const BOUNTIES = [
     type: 'professional',
     desc: 'Official OpenAI bug bounty hosted on Bugcrowd. Scope covers ChatGPT, the GPT API, and related OpenAI services and infrastructure. One of the most high-profile AI security research targets in the industry.',
     tags: ['prompt-injection', 'jailbreak', 'api-security', 'infrastructure'],
+    outOfScope: ['Prompt Injection', 'Role Confusion'], // Pure safety bypasses without security impact are OOS
     rewards: { critical: 'Varies', high: 'Varies', medium: 'Varies', low: 'Varies' },
     rewardNote: 'Rewards determined per-submission on Bugcrowd',
     apiBase: 'https://api.openai.com/v1',
