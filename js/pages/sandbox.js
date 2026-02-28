@@ -88,14 +88,14 @@ Router.registerPage('sandbox', function (container) {
               <input class="form-input" id="sb-apibase" type="text" placeholder="https://api.openai.com/v1"
                 value="${escHtml(apiBase || (activeBounty ? activeBounty.apiBase : 'https://api.openai.com/v1'))}" />
             </div>
+            ${availableModels && availableModels.length > 0 ? `
             <div class="form-group">
-              <label class="form-label">Model</label>
+              <label class="form-label">Model (Auto-Detected)</label>
               <select class="form-select" id="sb-model">
-                ${(availableModels || (activeBounty ? activeBounty.models : ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'])).map(m =>
-      `<option value="${m}" ${selectedModel === m ? 'selected' : ''}>${m}</option>`
-    ).join('')}
+                ${availableModels.map(m => `<option value="${m}" ${selectedModel === m ? 'selected' : ''}>${m}</option>`).join('')}
               </select>
             </div>
+            ` : ''}
             <div id="sb-connect-status" class="connect-status ${connected ? 'connected' : 'disconnected'}" style="margin-bottom:14px;">
               ${connected ? '✅ Connected' : '⛔ Not connected'}
             </div>
@@ -204,8 +204,9 @@ Router.registerPage('sandbox', function (container) {
       return res;
     } catch (e) {
       console.warn('Direct fetch failed (likely CORS). Retrying with proxy...', e);
-      // Use corsproxy.io as a fallback for strict APIs like OpenAI/Anthropic
-      return await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, options);
+      // Use AllOrigins as a highly reliable fallback for strict APIs
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      return await fetch(proxyUrl, options);
     }
   }
 
@@ -213,7 +214,8 @@ Router.registerPage('sandbox', function (container) {
   window.sandboxConnect = async function () {
     const key = document.getElementById('sb-apikey')?.value.trim() || '';
     const base = document.getElementById('sb-apibase')?.value.trim() || '';
-    const model = document.getElementById('sb-model')?.value || 'gpt-4o';
+    // Model might not exist in the DOM yet
+    let model = document.getElementById('sb-model')?.value || '';
 
     if (!key) { showToast('Please enter an API key', 'error'); return; }
 
@@ -221,7 +223,7 @@ Router.registerPage('sandbox', function (container) {
     if (statusEl) { statusEl.className = 'connect-status connecting'; statusEl.textContent = '⏳ Connecting…'; }
 
     try {
-      // Fetch models
+      // Fetch models to auto-detect
       const res = await fetchWithCorsBypass(`${base}/models`, {
         headers: { 'Authorization': `Bearer ${key}` }
       });
@@ -232,42 +234,48 @@ Router.registerPage('sandbox', function (container) {
           const data = await res.json();
           // Universal compat format: { data: [{id: "model-1"}, ...] }
           if (data && data.data && Array.isArray(data.data)) {
-            // Filter out embeddings and TTS to keep the list clean for sandbox chat
-            fetchedModels = data.data.map(m => m.id).filter(id => id && !id.includes('embed') && !id.includes('tts') && !id.includes('dall-e') && !id.includes('whisper'));
+            fetchedModels = data.data.map(m => m.id).filter(id => id && !id.includes('embed') && !id.includes('tts') && !id.includes('dall-e') && !id.includes('whisper') && !id.includes('babbage') && !id.includes('davinci'));
           } else if (Array.isArray(data)) {
             fetchedModels = data.map(m => m.id || m.name || m).filter(id => typeof id === 'string' && !id.includes('embed'));
           }
 
           if (fetchedModels && fetchedModels.length > 0) {
             fetchedModels.sort();
-            if (!fetchedModels.includes(model)) {
-              model = fetchedModels[0]; // auto-select first available valid model
+            if (!model || !fetchedModels.includes(model)) {
+              // Priority: 4o, 4-turbo, sonnet, pro
+              model = fetchedModels.find(m => m.includes('4o')) ||
+                fetchedModels.find(m => m.includes('sonnet')) ||
+                fetchedModels.find(m => m.includes('pro')) ||
+                fetchedModels[0];
             }
           }
         } catch (e) { console.error("Could not parse models", e); }
+      } else {
+        // Some APIs like Anthropic don't standardly expose /models with simple Bearer auth
+        // Fallback models based on common endpoints
+        if (base.includes('anthropic')) { fetchedModels = ['claude-3-7-sonnet-20250219', 'claude-3-5-sonnet-20241022']; model = fetchedModels[0]; }
+        if (base.includes('google')) { fetchedModels = ['gemini-2.5-pro', 'gemini-2.0-flash']; model = fetchedModels[0]; }
       }
 
-      if (res.ok || res.status === 404) { // 404 = model list not available, but key works
-        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true, availableModels: fetchedModels || availableModels });
-        showToast(`Connected to ${base}${fetchedModels ? ' (Models Auto-Detected)' : ''}`, 'success');
-      } else if (res.status === 401) {
-        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: false, availableModels: fetchedModels || availableModels });
-        showToast('Invalid API key', 'error');
+      if (res.ok || fetchedModels) {
+        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true, availableModels: fetchedModels });
+        showToast(`Connected to ${base} (Models Auto-Detected)`, 'success');
+      } else if (res.status === 401 || res.status === 403) {
+        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: false, availableModels: null });
+        showToast('Invalid API key or Unauthorized', 'error');
       } else {
-        // Accept anyway — some endpoints don't have /models
-        Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true, availableModels: fetchedModels || availableModels });
+        Store.setState({ apiKey: key, apiBase: base, selectedModel: model || 'gpt-4o', connected: true, availableModels: ['gpt-4o', 'gpt-4-turbo'] });
         showToast(`Connected (status ${res.status})`, 'info');
       }
     } catch (e) {
-      // Network error / CORS — still save creds, send when messaging
-      Store.setState({ apiKey: key, apiBase: base, selectedModel: model, connected: true, availableModels: null }); // Clear availableModels on network error
-      showToast('Credentials saved. Connection will be verified on first message.', 'info');
+      Store.setState({ apiKey: key, apiBase: base, selectedModel: model || 'gpt-4o', connected: false, availableModels: null });
+      showToast('Network error verifying key. Check CORS or internet.', 'error');
     }
 
     // Force local variables to sync before render
-    apiKey = key;
-    apiBase = base;
-    selectedModel = model;
+    apiKey = Store.getState().apiKey;
+    apiBase = Store.getState().apiBase;
+    selectedModel = Store.getState().selectedModel;
     availableModels = Store.getState().availableModels;
 
     renderFull();
