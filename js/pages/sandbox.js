@@ -207,14 +207,16 @@ Router.registerPage('sandbox', function (container) {
 
       const isPost = options && options.method === 'POST';
 
-      // List of public proxies. Some don't support POST, some have strict rate limits.
+      // List of public proxies. Most public proxies eventually die or rate-limit.
+      // We prioritize our local Flask proxy (`server.py`) for absolute stability.
+      // corsproxy.io is the standard public bridge, proxy.cors.sh is a highly reliable fallback.
       const proxies = [
+        `http://127.0.0.1:5000/proxy?url=${encodeURIComponent(url)}`,
         `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-        `https://api.cors.lol/?url=${encodeURIComponent(url)}`,
-        `https://cors-anywhere.herokuapp.com/${url}`
+        `https://proxy.cors.sh/${url}`
       ];
 
-      // allorigins only supports GET, but is highly reliable
+      // allorigins only supports GET, but is extremely reliable for initial model fetching
       if (!isPost) {
         proxies.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
       }
@@ -222,12 +224,8 @@ Router.registerPage('sandbox', function (container) {
       let lastError;
       for (const proxy of proxies) {
         try {
-          // If the proxy is cors-anywhere, it might require this header for public access
-          const isCorsAnywhere = proxy.includes('cors-anywhere');
+          // Special headers not strictly required for cors.sh, but passing them is safe
           const clonedOptions = { ...options };
-          if (isCorsAnywhere) {
-            clonedOptions.headers = { ...clonedOptions.headers, 'Origin': window.location.origin || 'http://localhost' };
-          }
 
           const res = await fetch(proxy, clonedOptions);
 
