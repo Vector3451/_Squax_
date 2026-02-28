@@ -375,7 +375,12 @@ Router.registerPage('sandbox', function (container) {
   };
 
   window.sbHandleKey = function (e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sandboxSend(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      sandboxSend();
+      return false;
+    }
     // Auto-grow textarea
     const ta = e.target;
     ta.style.height = 'auto';
