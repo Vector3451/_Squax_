@@ -81,12 +81,12 @@ Router.registerPage('sandbox', function (container) {
             <div class="section-title">🔌 API Connection</div>
             <div class="form-group">
               <label class="form-label">API Key</label>
-              <input class="form-input" id="sb-apikey" type="password" placeholder="sk-..." value="${escHtml(apiKey)}" />
+              <input class="form-input" id="sb-apikey" type="password" placeholder="sk-..." value="${escHtml(apiKey)}" onkeydown="sbHandleConnectKey(event)" />
             </div>
             <div class="form-group">
               <label class="form-label">Base URL</label>
               <input class="form-input" id="sb-apibase" type="text" placeholder="https://api.openai.com/v1"
-                value="${escHtml(apiBase || (activeBounty ? activeBounty.apiBase : 'https://api.openai.com/v1'))}" />
+                value="${escHtml(apiBase || (activeBounty ? activeBounty.apiBase : 'https://api.openai.com/v1'))}" onkeydown="sbHandleConnectKey(event)" />
             </div>
             ${availableModels && availableModels.length > 0 ? `
             <div class="form-group">
@@ -442,6 +442,15 @@ Router.registerPage('sandbox', function (container) {
     const ta = e.target;
     ta.style.height = 'auto';
     ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  };
+
+  window.sbHandleConnectKey = function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      sandboxConnect();
+      return false;
+    }
   };
 
   function rerenderChat() {
