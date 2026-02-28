@@ -204,8 +204,8 @@ Router.registerPage('sandbox', function (container) {
       return res;
     } catch (e) {
       console.warn('Direct fetch failed (likely CORS). Retrying with proxy...', e);
-      // Use AllOrigins as a highly reliable fallback for strict APIs
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      // Use corsproxy.io as it supports POST requests and header forwarding
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
       return await fetch(proxyUrl, options);
     }
   }
