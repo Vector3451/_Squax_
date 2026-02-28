@@ -272,8 +272,12 @@ Router.registerPage('sandbox', function (container) {
 
     try {
       // Fetch models to auto-detect
-      const res = await fetchWithCorsBypass(`${base}/models`, {
-        headers: { 'Authorization': `Bearer ${key}` }
+      const isGemini = base.includes('generativelanguage.googleapis');
+      const targetUrl = isGemini ? `${base}/models?key=${key}` : `${base}/models`;
+      const reqHeaders = isGemini ? {} : { 'Authorization': `Bearer ${key}` };
+
+      const res = await fetchWithCorsBypass(targetUrl, {
+        headers: reqHeaders
       });
 
       let fetchedModels = null;
@@ -358,13 +362,20 @@ Router.registerPage('sandbox', function (container) {
         { role: 'user', content: text },
       ];
 
-      const res = await fetchWithCorsBypass(`${s.apiBase}/chat/completions`, {
+      const isGemini = s.apiBase.includes('generativelanguage.googleapis');
+      const targetUrl = isGemini ? `${s.apiBase}/chat/completions?key=${s.apiKey}` : `${s.apiBase}/chat/completions`;
+
+      const reqHeaders = {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01', // needed for Claude endpoints
+      };
+      if (!isGemini) {
+        reqHeaders['Authorization'] = `Bearer ${s.apiKey}`;
+      }
+
+      const res = await fetchWithCorsBypass(targetUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${s.apiKey}`,
-          'anthropic-version': '2023-06-01', // needed for Claude endpoints
-        },
+        headers: reqHeaders,
         body: JSON.stringify({ model: s.selectedModel, messages, max_tokens: 1024, stream: false }),
       });
 
