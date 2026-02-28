@@ -209,12 +209,12 @@ Router.registerPage('sandbox', function (container) {
 
       // List of public proxies. Some don't support POST, some have strict rate limits.
       const proxies = [
-        `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
         `https://api.cors.lol/?url=${encodeURIComponent(url)}`,
-        `https://thingproxy.freeboard.io/fetch/${url}`
+        `https://cors-anywhere.herokuapp.com/${url}`
       ];
 
-      // allorigins only supports GET
+      // allorigins only supports GET, but is highly reliable
       if (!isPost) {
         proxies.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
       }
@@ -222,11 +222,23 @@ Router.registerPage('sandbox', function (container) {
       let lastError;
       for (const proxy of proxies) {
         try {
-          const res = await fetch(proxy, options);
-          if (res.status !== 429) { // 429 = Too Many Requests (Rate Limited by proxy)
+          // If the proxy is cors-anywhere, it might require this header for public access
+          const isCorsAnywhere = proxy.includes('cors-anywhere');
+          const clonedOptions = { ...options };
+          if (isCorsAnywhere) {
+            clonedOptions.headers = { ...clonedOptions.headers, 'Origin': window.location.origin || 'http://localhost' };
+          }
+
+          const res = await fetch(proxy, clonedOptions);
+
+          // 429 = Too Many Requests (Proxy rate limit)
+          // 404 = Sometimes proxies return 404 if the target URL is mangled or blocked
+          if (res.status !== 429 && (!res.headers.get('x-cors-grida-error') || res.status !== 404)) {
+            // If it's a 404 but it actually came from OpenAI/Anthropic, we should still return it.
+            // We only skip 404s if it looks like the proxy itself generated the 404.
             return res;
           }
-          console.warn(`Proxy ${proxy} returned 429 Rate Limit. Trying next...`);
+          console.warn(`Proxy ${proxy} returned ${res.status} Rate Limit / Proxy Error. Trying next...`);
         } catch (err) {
           console.warn(`Proxy ${proxy} failed completely. Trying next...`);
           lastError = err;
