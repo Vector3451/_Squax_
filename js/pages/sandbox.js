@@ -203,10 +203,37 @@ Router.registerPage('sandbox', function (container) {
       const res = await fetch(url, options);
       return res;
     } catch (e) {
-      console.warn('Direct fetch failed (likely CORS). Retrying with proxy...', e);
-      // Use corsproxy.io as it supports POST requests and header forwarding
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-      return await fetch(proxyUrl, options);
+      console.warn('Direct fetch failed (likely CORS). Retrying with proxies...', e);
+
+      const isPost = options && options.method === 'POST';
+
+      // List of public proxies. Some don't support POST, some have strict rate limits.
+      const proxies = [
+        `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        `https://api.cors.lol/?url=${encodeURIComponent(url)}`,
+        `https://thingproxy.freeboard.io/fetch/${url}`
+      ];
+
+      // allorigins only supports GET
+      if (!isPost) {
+        proxies.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+      }
+
+      let lastError;
+      for (const proxy of proxies) {
+        try {
+          const res = await fetch(proxy, options);
+          if (res.status !== 429) { // 429 = Too Many Requests (Rate Limited by proxy)
+            return res;
+          }
+          console.warn(`Proxy ${proxy} returned 429 Rate Limit. Trying next...`);
+        } catch (err) {
+          console.warn(`Proxy ${proxy} failed completely. Trying next...`);
+          lastError = err;
+        }
+      }
+
+      throw new Error(`All CORS proxies failed or rate-limited. Last error: ${lastError?.message || 'Rate Limited (429)'}`);
     }
   }
 
