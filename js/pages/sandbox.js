@@ -252,7 +252,16 @@ Router.registerPage('sandbox', function (container) {
   // ─── Connect ──────────────────────────────────────
   window.sandboxConnect = async function () {
     const key = document.getElementById('sb-apikey')?.value.trim() || '';
-    const base = document.getElementById('sb-apibase')?.value.trim() || '';
+    let base = document.getElementById('sb-apibase')?.value.trim() || '';
+
+    // Auto-fix Google Gemini URLs to map to their official OpenAI-compatibility layer
+    if (base && base.includes('generativelanguage.googleapis.com') && !base.endsWith('openai')) {
+      base = base.replace(/\/+$/, '') + '/openai';
+      if (document.getElementById('sb-apibase')) {
+        document.getElementById('sb-apibase').value = base;
+      }
+    }
+
     // Model might not exist in the DOM yet
     let model = document.getElementById('sb-model')?.value || '';
 
