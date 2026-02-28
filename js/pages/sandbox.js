@@ -79,15 +79,17 @@ Router.registerPage('sandbox', function (container) {
           <!-- API Connection -->
           <div class="card">
             <div class="section-title">🔌 API Connection</div>
-            <div class="form-group">
-              <label class="form-label">API Key</label>
-              <input class="form-input" id="sb-apikey" type="password" placeholder="sk-..." value="${escHtml(apiKey)}" onkeydown="sbHandleConnectKey(event)" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Base URL</label>
-              <input class="form-input" id="sb-apibase" type="text" placeholder="https://api.openai.com/v1"
-                value="${escHtml(apiBase || (activeBounty ? activeBounty.apiBase : 'https://api.openai.com/v1'))}" onkeydown="sbHandleConnectKey(event)" />
-            </div>
+            <form onsubmit="return false;">
+              <div class="form-group">
+                <label class="form-label">API Key</label>
+                <input class="form-input" id="sb-apikey" type="password" placeholder="sk-..." value="${escHtml(apiKey)}" onkeydown="sbHandleConnectKey(event)" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Base URL</label>
+                <input class="form-input" id="sb-apibase" type="text" placeholder="https://api.openai.com/v1"
+                  value="${escHtml(apiBase || (activeBounty ? activeBounty.apiBase : 'https://api.openai.com/v1'))}" onkeydown="sbHandleConnectKey(event)" />
+              </div>
+            </form>
             ${availableModels && availableModels.length > 0 ? `
             <div class="form-group">
               <label class="form-label">Model (Auto-Detected)</label>
@@ -178,13 +180,13 @@ Router.registerPage('sandbox', function (container) {
               </div>` : chatHistory.map(m => renderChatMsg(m)).join('')}
           </div>
 
-          <div class="chat-input-area" style="flex-shrink:0; margin-top:14px;">
+          <form class="chat-input-area" style="flex-shrink:0; margin-top:14px;" onsubmit="return false;">
             <textarea class="chat-input" id="sb-input" placeholder="Type a probe or choose an attack preset…" rows="1"
               onkeydown="sbHandleKey(event)"></textarea>
             <button type="button" class="btn btn-primary" id="sb-send-btn" onclick="sandboxSend()" style="align-self:flex-end;">
               Send ↑
             </button>
-          </div>
+          </form>
           <div style="font-size:10px; color:var(--text-muted); margin-top:6px; text-align:right; flex-shrink:0;">
             Hold Shift+Enter for new line · Messages: ${chatHistory.length}
           </div>
@@ -243,7 +245,10 @@ Router.registerPage('sandbox', function (container) {
         }
       }
 
-      throw new Error(`All CORS proxies failed or rate-limited. Last error: ${lastError?.message || 'Rate Limited (429)'}`);
+      let errorMsg = lastError?.message || 'Rate Limited (429)';
+      // Sanitize URL parameters to prevent API key leakage in the UI error
+      errorMsg = errorMsg.replace(/key=[^&\s]+/g, 'key=[hidden]');
+      throw new Error(`All CORS proxies failed or rate-limited. Last error: ${errorMsg}`);
     }
   }
 
@@ -270,9 +275,8 @@ Router.registerPage('sandbox', function (container) {
 
     try {
       // Fetch models to auto-detect
-      const isGemini = base.includes('generativelanguage.googleapis');
-      const targetUrl = isGemini ? `${base}/models?key=${key}` : `${base}/models`;
-      const reqHeaders = isGemini ? {} : { 'Authorization': `Bearer ${key}` };
+      const targetUrl = `${base}/models`;
+      const reqHeaders = { 'Authorization': `Bearer ${key}` };
 
       const res = await fetchWithCorsBypass(targetUrl, {
         headers: reqHeaders
@@ -360,16 +364,13 @@ Router.registerPage('sandbox', function (container) {
         { role: 'user', content: text },
       ];
 
-      const isGemini = s.apiBase.includes('generativelanguage.googleapis');
-      const targetUrl = isGemini ? `${s.apiBase}/chat/completions?key=${s.apiKey}` : `${s.apiBase}/chat/completions`;
+      const targetUrl = `${s.apiBase}/chat/completions`;
 
       const reqHeaders = {
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01', // needed for Claude endpoints
+        'Authorization': `Bearer ${s.apiKey}`
       };
-      if (!isGemini) {
-        reqHeaders['Authorization'] = `Bearer ${s.apiKey}`;
-      }
 
       const res = await fetchWithCorsBypass(targetUrl, {
         method: 'POST',

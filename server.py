@@ -46,6 +46,6 @@ def proxy():
         return Response(f"Flask Proxy Error: {str(e)}", status=500)
 
 if __name__ == '__main__':
-    print("🚀 Squax Local Server started at http://127.0.0.1:5000")
-    print("🔌 Local CORS Proxy available at http://127.0.0.1:5000/proxy")
+    print(">> Squax Local Server started at http://127.0.0.1:5000")
+    print(">> Local CORS Proxy available at http://127.0.0.1:5000/proxy")
     app.run(host='127.0.0.1', port=5000, debug=True)
