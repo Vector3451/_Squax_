@@ -135,7 +135,7 @@ Router.registerPage('sandbox', function (container) {
                   ${isOOS ? '<span class="badge badge-danger" title="Explicitly out of scope for this program" style="font-size:9px;padding:2px 6px;">Out of Scope</span>' : ''}
                 </div>
                 ${cat.attacks.map(a => `
-                  <button class="attack-btn" style="${isOOS ? 'opacity:0.6; border-color:rgba(239,68,68,0.2) !important;' : ''}"
+                  <button type="button" class="attack-btn" style="${isOOS ? 'opacity:0.6; border-color:rgba(239,68,68,0.2) !important;' : ''}"
                     onclick="sandboxUseAttack(${JSON.stringify(a.prompt).replace(/"/g, '&quot;')})"
                     title="${isOOS ? 'Warning: Out of scope for selected bounty' : ''}">
                     <span class="attack-icon">${a.icon}</span>
@@ -416,7 +416,7 @@ function renderChatMsg(m) {
       <div>
         <div class="chat-bubble ${isUser ? 'user' : 'ai'}">
           ${content}
-          ${!isUser ? `<button class="flag-btn" onclick="sandboxFlag('${m.id}')">📌 Flag as Evidence</button>` : ''}
+          ${!isUser ? `<button type="button" class="flag-btn" onclick="sandboxFlag('${m.id}')">📌 Flag as Evidence</button>` : ''}
         </div>
         <div class="chat-meta">${time} · ${m.role}</div>
       </div>
@@ -431,7 +431,7 @@ function renderEvidenceItem(e) {
       <strong>Probe: ${escHtml(short(e.prompt, 60))}</strong>
       <p>${escHtml(short(e.response, 100))}</p>
       <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">${new Date(e.timestamp).toLocaleTimeString()}</div>
-      <button class="evidence-remove" onclick="sbRemoveEvidence('${e.id}')">✕</button>
+      <button type="button" class="evidence-remove" onclick="sbRemoveEvidence('${e.id}')">✕</button>
     </div>
   `;
 }

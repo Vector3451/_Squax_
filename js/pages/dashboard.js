@@ -32,7 +32,7 @@ Router.registerPage('dashboard', function (container) {
             <h1>Dashboard</h1>
             <p>Your real-time activity — all data is saved locally in your browser.</p>
           </div>
-          <button class="btn btn-primary btn-lg" onclick="Router.navigateTo('#bounties')">
+          <button type="button" class="btn btn-primary btn-lg" onclick="Router.navigateTo('#bounties')">
             Browse Bounties →
           </button>
         </div>
@@ -51,9 +51,9 @@ Router.registerPage('dashboard', function (container) {
               Select a real bug bounty program, probe the AI in a sandboxed environment with built-in attack presets, flag suspicious responses as evidence, and generate a professional CVE-style report to submit.
             </p>
             <div class="flex gap-2 mt-3" style="flex-wrap:wrap;">
-              <button class="btn btn-primary" onclick="Router.navigateTo('#sandbox')">Open Sandbox</button>
-              <button class="btn btn-secondary" onclick="Router.navigateTo('#june')">June AI Panel</button>
-              ${hasAnyData ? `<button class="btn btn-danger btn-sm" onclick="clearAllData()" style="margin-left:auto;">🗑 Clear My Data</button>` : ''}
+              <button type="button" class="btn btn-primary" onclick="Router.navigateTo('#sandbox')">Open Sandbox</button>
+              <button type="button" class="btn btn-secondary" onclick="Router.navigateTo('#june')">June AI Panel</button>
+              ${hasAnyData ? `<button type="button" class="btn btn-danger btn-sm" onclick="clearAllData()" style="margin-left:auto;">🗑 Clear My Data</button>` : ''}
             </div>
           </div>
           <div style="font-size:80px;opacity:0.15;user-select:none;flex-shrink:0;">🛡️</div>
@@ -109,7 +109,7 @@ Router.registerPage('dashboard', function (container) {
             <div class="empty-state" style="padding:28px;">
               <div class="empty-icon">🎯</div>
               <div>No bounty selected</div>
-              <button class="btn btn-primary btn-sm" onclick="Router.navigateTo('#bounties')" style="margin-top:10px;">Browse Programs</button>
+              <button type="button" class="btn btn-primary btn-sm" onclick="Router.navigateTo('#bounties')" style="margin-top:10px;">Browse Programs</button>
             </div>
           `}
         </div>
@@ -200,7 +200,7 @@ Router.registerPage('dashboard', function (container) {
               ${reports.length > 8 ? `<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:8px;">+${reports.length - 8} more</div>` : ''}
             </div>
           `}
-          <button class="btn btn-secondary w-full" onclick="Router.navigateTo('#reports')" style="margin-top:14px;">
+          <button type="button" class="btn btn-secondary w-full" onclick="Router.navigateTo('#reports')" style="margin-top:14px;">
             Open Report Builder →
           </button>
         </div>
@@ -231,9 +231,9 @@ function renderActiveBounty(b) {
       ${(b.tags || []).map(t => `<span class="badge badge-tag">${t}</span>`).join('')}
     </div>
     <div class="flex gap-2" style="flex-wrap:wrap;">
-      <button class="btn btn-primary btn-sm" onclick="Router.navigateTo('#sandbox')">Go to Sandbox</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="Router.navigateTo('#sandbox')">Go to Sandbox</button>
       <a class="btn btn-secondary btn-sm" href="${escHtml(b.programUrl || '#')}" target="_blank" rel="noopener noreferrer">Visit Program ↗</a>
-      <button class="btn btn-secondary btn-sm" onclick="Router.navigateTo('#bounties')">Change</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="Router.navigateTo('#bounties')">Change</button>
     </div>
   `;
 }

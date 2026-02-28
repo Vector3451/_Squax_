@@ -36,9 +36,9 @@ Router.registerPage('reports', function (container) {
             <p>Generate a professional vulnerability report from your sandbox findings</p>
           </div>
           <div class="flex gap-2">
-            <button class="btn btn-secondary btn-sm" onclick="reportSaveDraft()">💾 Save Draft</button>
-            <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨 Print / PDF</button>
-            <button class="btn btn-primary btn-sm" onclick="reportSubmit()">📤 Submit to Program</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="reportSaveDraft()">💾 Save Draft</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.print()">🖨 Print / PDF</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="reportSubmit()">📤 Submit to Program</button>
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ Router.registerPage('reports', function (container) {
           <div class="card" style="margin-bottom:16px;">
             <div class="section-title flex justify-between items-center">
               <span>📌 Evidence Log (${evidence.length} items)</span>
-              <button class="btn btn-secondary btn-sm" onclick="Router.navigateTo('#sandbox')">+ Add in Sandbox</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="Router.navigateTo('#sandbox')">+ Add in Sandbox</button>
             </div>
             ${evidence.length === 0 ? `
               <div class="empty-state" style="padding:24px;">
@@ -144,9 +144,9 @@ Router.registerPage('reports', function (container) {
 
           <!-- Actions -->
           <div class="flex gap-3" style="flex-wrap:wrap;">
-            <button class="btn btn-primary btn-lg flex-1" onclick="reportSubmit()">📤 Submit to Program</button>
-            <button class="btn btn-secondary btn-lg" onclick="window.print()">🖨 Export PDF</button>
-            <button class="btn btn-secondary btn-lg" onclick="reportDownloadJSON()">⬇ Download JSON</button>
+            <button type="button" class="btn btn-primary btn-lg flex-1" onclick="reportSubmit()">📤 Submit to Program</button>
+            <button type="button" class="btn btn-secondary btn-lg" onclick="window.print()">🖨 Export PDF</button>
+            <button type="button" class="btn btn-secondary btn-lg" onclick="reportDownloadJSON()">⬇ Download JSON</button>
           </div>
         </div>
 
@@ -228,7 +228,7 @@ Router.registerPage('reports', function (container) {
         <p style="color:var(--text-secondary);font-size:13px;margin-bottom:6px;">Your vulnerability report has been sent to the program team.</p>
         <p style="color:var(--text-muted);font-size:12px;margin-bottom:24px;">Report ID: <span class="mono" style="color:var(--accent-light);">${r.id.toUpperCase()}</span></p>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:24px;">Expected response time: <strong style="color:var(--text-primary);">3–7 business days</strong></p>
-        <button class="btn btn-primary w-full" onclick="this.closest('[style*=fixed]').remove()">Close</button>
+        <button type="button" class="btn btn-primary w-full" onclick="this.closest('[style*=fixed]').remove()">Close</button>
       </div>`;
         document.body.appendChild(overlay);
     };

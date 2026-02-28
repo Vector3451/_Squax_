@@ -248,7 +248,7 @@ Router.registerPage('june', function (container) {
               <input class="form-input" id="june-model" type="text" value="${escHtml(cfg.model)}"
                 placeholder="llama3, mistral, etc." />
             </div>
-            <button class="btn btn-primary w-full" onclick="juneConnect()">
+            <button type="button" class="btn btn-primary w-full" onclick="juneConnect()">
               🔌 ${cfg.online ? 'Reconnect June' : 'Connect June'}
             </button>
           </div>
@@ -271,8 +271,8 @@ Router.registerPage('june', function (container) {
               </div>
             `).join('')}
             <div class="flex gap-2 mt-3" style="margin-top:14px; flex-wrap:wrap;">
-              <button class="btn btn-secondary btn-sm" onclick="juneSelectAll()">Select All</button>
-              <button class="btn btn-secondary btn-sm" onclick="juneClearAll()">Clear All</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="juneSelectAll()">Select All</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="juneClearAll()">Clear All</button>
             </div>
           </div>
 
@@ -280,16 +280,16 @@ Router.registerPage('june', function (container) {
           <div id="june-cost-estimate">
             ${renderCostEstimate(selected, getState().model)}
           </div>
-          <button class="btn btn-primary btn-lg w-full" id="june-run-btn"
+          <button type="button" class="btn btn-primary btn-lg w-full" id="june-run-btn"
             onclick="juneRunCampaign()" ${running ? 'disabled' : ''}>
             ${running ? '<div class="spinner"></div> Campaign Running…' : '🚀 Run Campaign'}
           </button>
 
           ${results.length > 0 ? `
-            <button class="btn btn-secondary w-full" onclick="juneAutoReport()">
+            <button type="button" class="btn btn-secondary w-full" onclick="juneAutoReport()">
               📝 Auto-Generate Report
             </button>
-            <button class="btn btn-secondary w-full" onclick="juneSendToMe()">
+            <button type="button" class="btn btn-secondary w-full" onclick="juneSendToMe()">
               📨 Send Report to Me
             </button>
           ` : ''}

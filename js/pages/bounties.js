@@ -227,15 +227,15 @@ Router.registerPage('bounties', function (container) {
 
       <!-- Type Tabs -->
       <div class="flex gap-2" style="margin-bottom:18px; flex-wrap:wrap;">
-        <button class="btn btn-sm ${typeFilter === 'all' ? 'btn-primary' : 'btn-secondary'}" onclick="bountyTypeFilter('all')">All (${BOUNTIES.length})</button>
-        <button class="btn btn-sm ${typeFilter === 'professional' ? 'btn-primary' : 'btn-secondary'}" onclick="bountyTypeFilter('professional')">💰 Paid Bounties (${pro})</button>
-        <button class="btn btn-sm ${typeFilter === 'competition' ? 'btn-primary' : 'btn-secondary'}" onclick="bountyTypeFilter('competition')">🏆 Competitions (${comp})</button>
+        <button type="button" class="btn btn-sm ${typeFilter === 'all' ? 'btn-primary' : 'btn-secondary'}" onclick="bountyTypeFilter('all')">All (${BOUNTIES.length})</button>
+        <button type="button" class="btn btn-sm ${typeFilter === 'professional' ? 'btn-primary' : 'btn-secondary'}" onclick="bountyTypeFilter('professional')">💰 Paid Bounties (${pro})</button>
+        <button type="button" class="btn btn-sm ${typeFilter === 'competition' ? 'btn-primary' : 'btn-secondary'}" onclick="bountyTypeFilter('competition')">🏆 Competitions (${comp})</button>
       </div>
 
       <!-- Tag Filter -->
       <div class="flex gap-2" style="flex-wrap:wrap; margin-bottom:22px;">
         ${tags.map(t => `
-          <button class="btn btn-sm ${filterTag === t ? 'btn-primary' : 'btn-secondary'}"
+          <button type="button" class="btn btn-sm ${filterTag === t ? 'btn-primary' : 'btn-secondary'}"
             onclick="bountySetFilter('${t}')">
             ${t === 'all' ? 'All Tags' : t}
           </button>
@@ -318,7 +318,7 @@ function renderBountyCard(b) {
             onclick="event.stopPropagation()">
             ↗ Visit
           </a>
-          ${b.apiBase ? `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); selectBounty('${b.id}')">Sandbox →</button>` : ''}
+          ${b.apiBase ? `<button type="button" class="btn btn-primary btn-sm" onclick="event.stopPropagation(); selectBounty('${b.id}')">Sandbox →</button>` : ''}
         </div>
       </div>
     </div>
